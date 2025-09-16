@@ -1,92 +1,54 @@
-document.addEventListener('DOMContentLoaded', () => {
-            let guestBook = []; // Hanya disimpan di memori, tidak pakai localStorage
-            
-            const guestForm = document.getElementById('guestForm');
-            const daftarPesan = document.getElementById('messages');
-            const messageInput = document.getElementById('message');
-            const charCount = document.getElementById('charCount');
-            
-            // Update karakter count
-            messageInput.addEventListener('input', () => {
-                const length = messageInput.value.length;
-                charCount.textContent = length;
-                
-                if (length > 150) {
-                    charCount.style.color = 'red';
-                } else {
-                    charCount.style.color = '#666';
-                }
-            });
+const noteForm = document.getElementById('noteForm');
+    const notesList = document.getElementById('notesList');
+    let notes = []; // array penampung catatan
 
-            // function submit form
-            guestForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                addGuestBook();
-            });
+    // render daftar catatan
+    function renderNotes() {
+      notesList.innerHTML = ''; // kosongkan dulu
+      notes.forEach((note, index) => {
+        const noteCard = document.createElement('div');
+        noteCard.className = 'note-card';
+        noteCard.innerHTML = `
+          <h3>${note.title}</h3>
+          <p>${note.content}</p>
+          <div class="note-actions">
+            <button class="edit" onclick="editNote(${index})">Edit</button>
+            <button class="delete" onclick="deleteNote(${index})">Hapus</button>
+          </div>
+        `;
+        notesList.appendChild(noteCard);
+      });
+    }
 
-            // fitur tambah
-            function addGuestBook() {
-                const nameGuest = document.getElementById('name').value.trim();
-                const pesanGuest = document.getElementById('message').value.trim();
-                
-                if (nameGuest === "" || pesanGuest === "") {
-                    alert('Nama / Pesan tidak boleh kosong !');
-                    return;
-                } else if (pesanGuest.length > 150) {
-                    alert('Pesan lebih dari 150 karakter !');
-                    return;
-                }
-                
-                // Tambahkan data ke guestBook
-                const newGuest = {
-                    name: nameGuest,
-                    message: pesanGuest,
-                    date: new Date().toLocaleString('id-ID')
-                };
-                
-                guestBook.push(newGuest);
-                render();
-                
-                // Reset form
-                guestForm.reset();
-                charCount.textContent = '0';
-                charCount.style.color = '#666';
-            }
+    // tambah catatan
+    noteForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('noteTitle').value.trim();
+      const content = document.getElementById('noteContent').value.trim();
 
-            // render halaman
-            function render() {
-                daftarPesan.innerHTML = '';
-                
-                if (guestBook.length === 0) {
-                    daftarPesan.innerHTML = `
-                        <div class="empty-state">
-                            <i>📝</i>
-                            <p>Belum ada pesan. Jadilah yang pertama mengisi buku tamu!</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                guestBook.forEach((item, index) => {
-                    const newDiv = document.createElement('div');
-                    newDiv.classList.add('card');
+      if (title && content) {
+        notes.push({ title, content });
+        renderNotes();
+        noteForm.reset();
+      }
+    });
 
-                    const newName = document.createElement('h3');
-                    newName.textContent = item.name;
+    // hapus catatan
+    function deleteNote(index) {
+      notes.splice(index, 1);
+      renderNotes();
+    }
 
-                    const newPesanGuest = document.createElement('p');
-                    newPesanGuest.textContent = item.message;
+    // edit catatan
+    function editNote(index) {
+      const note = notes[index];
+      document.getElementById('noteTitle').value = note.title;
+      document.getElementById('noteContent').value = note.content;
 
-                    const newMsg = document.createElement('small');
-                    newMsg.textContent = item.date;
+      // hapus catatan lama, nanti simpan ulang setelah submit
+      notes.splice(index, 1);
+      renderNotes();
+    }
 
-                    newDiv.appendChild(newName);
-                    newDiv.appendChild(newPesanGuest);
-                    newDiv.appendChild(newMsg);
-                    
-                    daftarPesan.appendChild(newDiv);
-                });
-            }
-            
-            render();
-        });
+    // awal render (kosong)
+    renderNotes();
